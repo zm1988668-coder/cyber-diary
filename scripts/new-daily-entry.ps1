@@ -5,10 +5,9 @@ param(
 $date = Get-Date
 $dateStr = $date.ToString("yyyy-MM-dd")
 $fileName = "$DiaryDir\content\日记\$dateStr.md"
-$yearMonth = $date.ToString("yyyy-MM")
-
-# 创建月份文件夹（如果不存在）
 $monthDir = "$DiaryDir\content\日记"
+
+# 创建目录（如果不存在）
 if (-not (Test-Path $monthDir)) {
     New-Item -ItemType Directory -Path $monthDir -Force | Out-Null
 }
@@ -49,6 +48,11 @@ Write-Output "已创建日记: $fileName"
 # 提交并推送
 Set-Location $DiaryDir
 git add -A
-git commit -m "每日日记: $dateStr"
-git push
-Write-Output "已推送到 GitHub"
+$status = git status --porcelain
+if ($status) {
+    git commit -m "每日日记: $dateStr"
+    git push
+    Write-Output "已推送到 GitHub"
+} else {
+    Write-Output "无变更，跳过提交"
+}
