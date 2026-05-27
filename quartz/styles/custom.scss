@@ -1,3 +1,256 @@
 @use "./base.scss";
 
-// put your custom CSS here!
+// ============================================
+// CYBER DIARY - 赛博朋克灵魂注入
+// ============================================
+
+// --- 霓虹色变量 ---
+$neon-cyan: #0aefff;
+$neon-magenta: #ff00e5;
+$neon-green: #39ff14;
+$void-black: #050a14;
+$deep-blue: #0a1628;
+
+// --- 全局赛博朋克色调 ---
+:root {
+  --neon-cyan: #{$neon-cyan};
+  --neon-magenta: #{$neon-magenta};
+  --neon-green: #{$neon-green};
+  --void-black: #{$void-black};
+  --glow-cyan: 0 0 10px rgba(10, 239, 255, 0.5), 0 0 20px rgba(10, 239, 255, 0.3);
+  --glow-magenta: 0 0 10px rgba(255, 0, 229, 0.5), 0 0 20px rgba(255, 0, 229, 0.3);
+  --glow-green: 0 0 10px rgba(57, 255, 20, 0.5), 0 0 20px rgba(57, 255, 20, 0.3);
+}
+
+// --- 终端启动动画覆盖层 ---
+#cyber-boot {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: $void-black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  transition: opacity 0.8s ease;
+
+  &.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .boot-content {
+    max-width: 600px;
+    width: 90%;
+    color: $neon-cyan;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    text-shadow: var(--glow-cyan);
+
+    .boot-line {
+      opacity: 0;
+      transform: translateX(-10px);
+      animation: bootLineIn 0.3s ease forwards;
+
+      &.highlight {
+        color: $neon-green;
+        text-shadow: var(--glow-green);
+      }
+      &.accent {
+        color: $neon-magenta;
+        text-shadow: var(--glow-magenta);
+      }
+    }
+
+    .boot-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 1.1em;
+      background: $neon-cyan;
+      vertical-align: text-bottom;
+      animation: cursorBlink 0.6s step-end infinite;
+      box-shadow: var(--glow-cyan);
+    }
+  }
+}
+
+@keyframes bootLineIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+// --- 粒子画布 ---
+#cyber-particles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+// --- 滚动进度条（霓虹绿）---
+.navigation-progress {
+  height: 2px !important;
+  background: $neon-green !important;
+  box-shadow: var(--glow-green) !important;
+  transition: width 0.1s linear !important;
+}
+
+// --- Glitch 标题效果 ---
+.page-title {
+  position: relative;
+  display: inline-block;
+
+  a {
+    color: $neon-cyan !important;
+    text-shadow: var(--glow-cyan);
+    position: relative;
+    display: inline-block;
+
+    &::before,
+    &::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    &::before {
+      color: $neon-magenta;
+      animation: glitch-1 3s infinite linear alternate-reverse;
+      clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+      text-shadow: var(--glow-magenta);
+    }
+
+    &::after {
+      color: $neon-green;
+      animation: glitch-2 2.5s infinite linear alternate-reverse;
+      clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+      text-shadow: var(--glow-green);
+    }
+  }
+}
+
+@keyframes glitch-1 {
+  0%, 90% { transform: translate(0); }
+  91% { transform: translate(-2px, 1px); }
+  92% { transform: translate(2px, -1px); }
+  93% { transform: translate(-1px, 2px); }
+  94%, 100% { transform: translate(0); }
+}
+
+@keyframes glitch-2 {
+  0%, 85% { transform: translate(0); }
+  86% { transform: translate(2px, -1px); }
+  87% { transform: translate(-2px, 1px); }
+  88% { transform: translate(1px, -2px); }
+  89%, 100% { transform: translate(0); }
+}
+
+// --- 文章标题打字机效果 ---
+.article-title.typewriter {
+  overflow: hidden;
+  border-right: 2px solid $neon-cyan;
+  white-space: nowrap;
+  animation: typingExpand 0.6s steps(20) forwards, typewriterCursor 0.7s step-end infinite;
+  max-width: 0;
+}
+
+@keyframes typingExpand {
+  to { max-width: 100%; }
+}
+
+@keyframes typewriterCursor {
+  0%, 100% { border-color: $neon-cyan; }
+  50% { border-color: transparent; }
+}
+
+// --- 霓虹链接悬停 ---
+a.internal, a.external {
+  transition: all 0.2s ease !important;
+
+  &:hover {
+    text-shadow: var(--glow-cyan) !important;
+    color: $neon-cyan !important;
+  }
+}
+
+// --- 代码块霓虹边框 ---
+pre {
+  border: 1px solid rgba($neon-cyan, 0.2) !important;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    border-color: rgba($neon-cyan, 0.5) !important;
+    box-shadow: 0 0 15px rgba($neon-cyan, 0.1);
+  }
+}
+
+// --- 选中文字霓虹效果 ---
+::selection {
+  background: rgba($neon-cyan, 0.3) !important;
+  color: #fff !important;
+  text-shadow: none !important;
+}
+
+// --- 侧边栏搜索框霓虹 ---
+.search {
+  input {
+    border: 1px solid rgba($neon-cyan, 0.3) !important;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+    &:focus {
+      border-color: $neon-cyan !important;
+      box-shadow: var(--glow-cyan) !important;
+      outline: none !important;
+    }
+  }
+}
+
+// --- 标签霓虹效果 ---
+.tag-link {
+  border: 1px solid rgba($neon-cyan, 0.3);
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: $neon-magenta !important;
+    text-shadow: var(--glow-magenta) !important;
+    color: $neon-magenta !important;
+  }
+}
+
+// --- 分割线渐变霓虹 ---
+hr {
+  background: linear-gradient(90deg, transparent, $neon-cyan, $neon-magenta, transparent) !important;
+  height: 1px !important;
+  opacity: 0.5;
+}
+
+// --- Footer 微光 ---
+footer {
+  a {
+    color: rgba($neon-cyan, 0.6) !important;
+
+    &:hover {
+      color: $neon-cyan !important;
+      text-shadow: var(--glow-cyan) !important;
+    }
+  }
+}
+
+// --- 移动端适配 ---
+@media (max-width: 800px) {
+  .boot-content {
+    font-size: 0.72rem !important;
+  }
+}

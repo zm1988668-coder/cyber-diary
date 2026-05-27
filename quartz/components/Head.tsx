@@ -86,6 +86,9 @@ export default (() => {
         <meta name="description" content={description} />
         <meta name="generator" content="Quartz" />
 
+        {/* Cyber Diary - 赛博朋克灵魂脚本 */}
+        <script src={joinSegments(baseDir, "static/cyber.js")} defer></script>
+
         {css.map((resource) => CSSResourceToStyleElement(resource, true))}
         {js
           .filter((resource) => resource.loadTime === "beforeDOMReady")
