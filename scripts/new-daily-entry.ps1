@@ -12,6 +12,16 @@ $fileName = "$DiaryDir\content\diary\$dateStr.md"
 
 # --- 1. Create diary file if not exists ---
 if (-not (Test-Path $fileName)) {
+    # Find previous diary entry
+    $prevEntry = Get-ChildItem "$DiaryDir\content\diary\*.md" |
+        Where-Object { $_.Name -match '^\d{4}-\d{2}-\d{2}\.md$' -and $_.BaseName -lt $dateStr } |
+        Sort-Object Name -Descending | Select-Object -First 1
+
+    $prevLink = if ($prevEntry) { "← [[diary/$($prevEntry.BaseName)|$($prevEntry.BaseName)]]" } else { "" }
+    $nextLink = ""  # no next entry yet when creating today's
+
+    $navLine = if ($prevLink) { "$prevLink" } else { "" }
+
     $content = @"
 ---
 title: $dateStr
@@ -42,10 +52,26 @@ tags:
 
 ---
 
-*相关：*
+$navLine
 "@
     Set-Content -Path $fileName -Value $content -Encoding utf8
     Write-Output "Created: $fileName"
+
+    # Update previous entry to add forward link to today
+    if ($prevEntry) {
+        $prevContent = Get-Content $prevEntry.FullName -Raw -Encoding utf8
+        $forwardLink = "→ [[diary/$dateStr|$dateStr]]"
+        # Replace trailing nav line or append
+        if ($prevContent -match '←.*\[\[diary/') {
+            $prevContent = $prevContent -replace '(←[^\n]*)', "`$1  |  $forwardLink"
+        } elseif ($prevContent -match '\n---\n\s*$') {
+            $prevContent = $prevContent -replace '(\n---\n\s*)$', "`n---`n`n$forwardLink`n"
+        } else {
+            $prevContent = $prevContent.TrimEnd() + "`n`n→ [[diary/$dateStr|$dateStr]]`n"
+        }
+        Set-Content -Path $prevEntry.FullName -Value $prevContent -Encoding utf8 -NoNewline
+        Write-Output "Updated prev entry nav: $($prevEntry.BaseName)"
+    }
 }
 
 # --- 2. Count diary entries and days ---
@@ -62,11 +88,29 @@ $indexContent = Get-Content $indexPath -Raw -Encoding utf8
 $indexContent = $indexContent -replace '已坚持 \*\*\d+ 天\*\*', "已坚持 **$daysSince 天**"
 $indexContent = $indexContent -replace '已记录 \*\*\d+ 篇\*\*', "已记录 **$entryCount 篇**"
 
-# Update timeline (add new entry if not already there)
-$timelineEntry = "- [[diary/$dateStr|$dateStr]]"
+# Update recent entries list (keep latest 10, add new entry at top if title provided)
 if ($Title -and $indexContent -notmatch [regex]::Escape("diary/$dateStr")) {
-    $indexContent = $indexContent -replace '(## 📅 日记时间线\r?\n\r?\n)', "`$1- [[diary/$dateStr|$dateStr]] — $Title`n"
+    $indexContent = $indexContent -replace '(## 📅 最近日记\r?\n\r?\n)', "`$1- [[diary/$dateStr|$dateStr]] — $Title`n"
 }
+# Trim to 10 entries and update count in "查看全部" link
+$lines = $indexContent -split "`n"
+$sectionStart = ($lines | Select-String -Pattern '^## 📅 最近日记').LineNumber - 1
+$entryLines = @()
+$otherLines = @()
+$inSection = $false
+$entryCount2 = 0
+for ($i = 0; $i -lt $lines.Count; $i++) {
+    if ($i -eq $sectionStart) { $inSection = $true }
+    if ($inSection -and $lines[$i] -match '^\- \[\[diary/\d{4}-\d{2}-\d{2}') {
+        $entryLines += $lines[$i]
+    }
+}
+if ($entryLines.Count -gt 10) {
+    $keep = $entryLines[0..9]
+    $indexContent = $indexContent -replace [regex]::Escape(($entryLines -join "`n")), ($keep -join "`n")
+}
+# Update count in the "查看全部" link
+$indexContent = $indexContent -replace '查看全部日记（共 \*\*\d+ 篇\*\*）', "查看全部日记（共 **$entryCount 篇**）"
 
 Set-Content -Path $indexPath -Value $indexContent -Encoding utf8 -NoNewline
 
