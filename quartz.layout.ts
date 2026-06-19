@@ -4,10 +4,10 @@ import { FileTrieNode } from "./quartz/util/fileTrie"
 
 const explorerSortFn = (a: FileTrieNode, b: FileTrieNode): number => {
   if (a.isFolder && b.isFolder) {
-    return a.displayName.localeCompare(b.displayName, undefined, { numeric: true, sensitivity: "base" })
+    return a.slugSegment.localeCompare(b.slugSegment, undefined, { numeric: true, sensitivity: "base" })
   }
   if (!a.isFolder && !b.isFolder) {
-    return b.displayName.localeCompare(a.displayName, undefined, { numeric: true, sensitivity: "base" })
+    return b.slugSegment.localeCompare(a.slugSegment, undefined, { numeric: true, sensitivity: "base" })
   }
   return a.isFolder ? -1 : 1
 }
