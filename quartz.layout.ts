@@ -1,5 +1,16 @@
 import { PageLayout, SharedLayout } from "./quartz/cfg"
 import * as Component from "./quartz/components"
+import { FileTrieNode } from "./quartz/util/fileTrie"
+
+const explorerSortFn = (a: FileTrieNode, b: FileTrieNode): number => {
+  if (a.isFolder && b.isFolder) {
+    return a.displayName.localeCompare(b.displayName, undefined, { numeric: true, sensitivity: "base" })
+  }
+  if (!a.isFolder && !b.isFolder) {
+    return b.displayName.localeCompare(a.displayName, undefined, { numeric: true, sensitivity: "base" })
+  }
+  return a.isFolder ? -1 : 1
+}
 
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
@@ -37,7 +48,7 @@ export const defaultContentPageLayout: PageLayout = {
         { Component: Component.ReaderMode() },
       ],
     }),
-    Component.Explorer(),
+    Component.Explorer({ sortFn: explorerSortFn }),
   ],
   right: [
     Component.DesktopOnly(Component.TableOfContents()),
@@ -61,7 +72,7 @@ export const defaultListPageLayout: PageLayout = {
         { Component: Component.Darkmode() },
       ],
     }),
-    Component.Explorer(),
+    Component.Explorer({ sortFn: explorerSortFn }),
   ],
   right: [],
 }
