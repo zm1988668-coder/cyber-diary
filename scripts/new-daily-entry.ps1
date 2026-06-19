@@ -1,24 +1,24 @@
 param(
-    [string]$DiaryDir = "C:\Users\Lenovo\Desktop\赛博日记"
+    [string]$DiaryDir = "D:\cyber-diary"
 )
+
+# Force working directory to repo root
+Set-Location $DiaryDir
 
 $date = Get-Date
 $dateStr = $date.ToString("yyyy-MM-dd")
-$fileName = "$DiaryDir\content\日记\$dateStr.md"
-$monthDir = "$DiaryDir\content\日记"
+$fileName = "$DiaryDir\content\diary\$dateStr.md"
+$diaryDir = "$DiaryDir\content\diary"
 
-# 创建目录（如果不存在）
-if (-not (Test-Path $monthDir)) {
-    New-Item -ItemType Directory -Path $monthDir -Force | Out-Null
+if (-not (Test-Path $diaryDir)) {
+    New-Item -ItemType Directory -Path $diaryDir -Force | Out-Null
 }
 
-# 检查是否已存在
 if (Test-Path $fileName) {
-    Write-Output "今日日记已存在: $fileName"
+    Write-Output "Today's diary already exists: $fileName"
     exit 0
 }
 
-# 创建日记模板
 $content = @"
 ---
 title: $dateStr
@@ -29,30 +29,38 @@ tags:
 
 # $dateStr
 
-## 今日完成
+## 遇到了什么
 
 
-
-## 技能点
-
+## 怎么解决的
 
 
-## 明日计划
+## 结果
+
+| 项目 | 完成情况 |
+|------|---------|
+|  |  |
+
+## 踩过的坑
 
 
+## 学到什么
+
+
+---
+
+*相关：*
 "@
 
 Set-Content -Path $fileName -Value $content -Encoding utf8
-Write-Output "已创建日记: $fileName"
+Write-Output "Created diary: $fileName"
 
-# 提交并推送
-Set-Location $DiaryDir
 git add -A
 $status = git status --porcelain
 if ($status) {
-    git commit -m "每日日记: $dateStr"
+    git commit -m "diary: add $dateStr entry"
     git push
-    Write-Output "已推送到 GitHub"
+    Write-Output "Pushed to GitHub"
 } else {
-    Write-Output "无变更，跳过提交"
+    Write-Output "No changes, skipping commit"
 }
